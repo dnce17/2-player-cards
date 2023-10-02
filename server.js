@@ -27,12 +27,20 @@ io.on('connection', function(socket) {
     } 
     else {
         playersID.playerB = socket.id;
-        io.emit('isPlayerB', [playersID.playerB, playersID.playerA]);
+        io.emit('isPlayerB', [playersID.playerA, playersID.playerB]);
+
+        // socket.emit NOT broadcast so it only affects the owner of this socket
         socket.emit('board orienation');
     }
 
-    socket.on('to hand', function(data) {
-        io.emit('to hand', [data, playersID])
+    // Was for card one - might delete later
+    // socket.on('to hand', function(data) {
+    //     io.emit('to hand', [data, playersID])
+    // });
+
+    socket.on('change location', function(data) {
+        // io.emit('change location', [data, playersID])
+        socket.broadcast.emit('change location', [data, playersID])
     });
 
 });

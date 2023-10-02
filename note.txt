@@ -1,1 +1,4 @@
 started 9/30/23
+
+Credits
+https://stackoverflow.com/questions/16330404/how-to-remove-remote-origin-from-a-git-repository
