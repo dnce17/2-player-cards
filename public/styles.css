@@ -69,6 +69,11 @@
     display: inline-block;
 }
 
+.card-back {
+    width: 108px;
+    height: 150px;
+}
+
 /* Delete later - just used for testing */
 .card-gray {
     background-color: gray;

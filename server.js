@@ -43,6 +43,10 @@ io.on('connection', function(socket) {
         socket.broadcast.emit('change location', [data, playersID])
     });
 
+    socket.on('draw', function(data) {
+        io.emit('draw', [data, playersID]);
+    });
+
 });
 
 // Credits
