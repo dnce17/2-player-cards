@@ -24,27 +24,40 @@ deckCtnr.addEventListener('click', function() {
     socket.emit('draw', socket.id);
 });
 
-// Drag cards
-let start = null, end = null;
-cards.forEach(function(card) {
+function addDragEvt(card) {
+    let start = null;
     card.addEventListener('dragstart', function() {
         card.classList.add('is-dragging');
-        start = Array.prototype.indexOf.call(this.parentElement.children, this);
+        start = Array.prototype.indexOf.call(card.parentElement.children, card);
     })
 
-    card.addEventListener('dragend', function() {
+    card.addEventListener('dragend', function(e) {
         card.classList.remove('is-dragging');
+
+        // Issue
         socket.emit('change location', [socket.id, start])
-        console.log(socket.id);
     })
+}
+
+// Drag cards
+cards.forEach(function(card) {
+    addDragEvt(card);
 });
 
+let enemyDropSuccess = false;
 dropZones.forEach(function(dropZone) {
     dropZone.addEventListener('dragover', function(e) {
         e.preventDefault();
-        const curTask = document.querySelector('.is-dragging');
-        dropZone.appendChild(curTask);
     })
+
+    dropZone.addEventListener('drop', function(e) {
+        const curTask = document.querySelector('.is-dragging');
+        this.appendChild(curTask);
+
+        // Send info that drop was success to server w/ true
+        socket.emit('drop success check', true)
+    })
+
 });
 
 // LISTEN FOR EVENTS EMITTED "FROM" THE SERVER (BACKEND)
@@ -66,8 +79,6 @@ socket.on('isPlayerB', function(data) {
     playerAName.textContent = `Player A: ${playersID.playerA}`;
     playerBName.textContent = `Player B: ${playersID.playerB}`;
 
-    // console.log(playersID);
-
     // This causes player B's hand to be undraggable for some reason that Idk
     // playerB.innerHTML += `<p>Player B: ${data[0]}</p>`;
     // playerA.innerHTML += `<p>Player A: ${data[1]}</p>`;
@@ -85,34 +96,49 @@ socket.on('change location', function(data) {
 
     let playerID = data[0][0], cardIndex = data[0][1];
 
-    // console.log(playerID, cardIndex, data[1].playerA);
-
     // Compare ID to check who did the action
     if (playerID == data[1].playerA) {
-        dropCtnr.appendChild(playerAHand.children[cardIndex]);
-        // console.log('A');
-        // console.log(data[1].playerA);
-        // console.log(playerID + ' did it ');
+        // Issue = you assuming its the drop
+        // dropCtnr.appendChild(playerAHand.children[cardIndex]);
+        if (enemyDropSuccess) {
+            dropCtnr.appendChild(playerAHand.children[cardIndex]);
+        }
+        console.log(enemyDropSuccess);
+        enemyDropSuccess = false;
+        console.log(enemyDropSuccess);
     }
     else {
-        dropCtnr.appendChild(playerBHand.children[cardIndex]);
-        // console.log('B');
-        // console.log(data[1].playerB);
-        // console.log(playerID + ' did it ');
+        if (enemyDropSuccess) {
+            dropCtnr.appendChild(playerBHand.children[cardIndex]);
+        }
+        // dropCtnr.appendChild(playerBHand.children[cardIndex]);
+        console.log(enemyDropSuccess);
+        enemyDropSuccess = false;
+        console.log(enemyDropSuccess);
     }
 });
 
+socket.on('drop success check', function(data) {
+    enemyDropSuccess = data;
+})
+
 socket.on('draw', function(data) {
     // Compare ID to check who did the action
+    cardToDraw = data[2]
+    
     if (data[0] == data[1].playerA) {
-        playerAHand.appendChild(deckCtnr.firstElementChild);
-        // console.log('A');
+        playerAHand.innerHTML += `<img src="img/poker-cards/${cardToDraw}" draggable="true" class="card">`
+        // console.log(playerAHand.children)
+        for (let i = 0; i < playerAHand.children.length; i++) {
+            addDragEvt(playerAHand.children[i]);
+        }
     }
     else {
-        playerBHand.appendChild(deckCtnr.firstElementChild);
-        // console.log('B');
+        playerBHand.innerHTML += `<img src="img/poker-cards/${cardToDraw}" draggable="true" class="card">`
+        for (let i = 0; i < playerBHand.children.length; i++) {
+            addDragEvt(playerBHand.children[i]);
+        }
     }
-    
 });
 
 // let Deck = require('card-deck');
@@ -121,35 +147,15 @@ socket.on('draw', function(data) {
 // myDeck.shuffle();
 // console.log(myDeck.top());
 
-
-// -----
-
-// let cardOne = document.querySelector('.card-one');
-// cardOne.addEventListener('click', function() {
-//     socket.emit('to hand', [socket.id, Array.prototype.indexOf.call(deckCtnr.children, this)]);
-
-//     // console.log(Array.prototype.indexOf.call(deckCtnr.children, this));
-// });
-
-// socket.on('to hand', function(data) {
-//     console.log(data[0][0]);
-
-//     let playerID = data[0][0], cardIndex = data[0][1];
-
-
-//     if (playerID == data[1].playerA) {
-//         playerA.appendChild(deckCtnr.children[0]);
-//         console.log(data[0] + ' did it ');
-//     }
-//     else {
-//         playerB.appendChild(deckCtnr.children[0]);
-//         console.log(data[0] + ' did it ');
-//     }
-// });
-
 // Credits
 // https://stackoverflow.com/questions/66771371/how-to-get-index-of-div-in-parent-div
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
     // Note for above: Array.prototype.indexOf.call() is used to call indexOf on non-array object
     // Nodelist and HTMLCollection are both NOT an array
 // https://www.youtube.com/watch?v=ecKw7FfikwI&t=1005s
+
+// To use 
+// https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
+
+// Ideas
+// Send updates parent element to other player rather than the single element?

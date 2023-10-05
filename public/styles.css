@@ -20,40 +20,36 @@
 }
 
 .drop-ctnr, .deck-ctnr {
-    padding: 10px;
+    position: relative;
+    width: 138px;
+    height: 170px;
+    text-align: center;
     border: 1px dashed black;
 }
 
-.card {
-    width: 60px;
-    height: 100px;
-    background-color: gray;
+.drop-ctnr .card, .deck-ctnr .card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.card-one {
-    background-color: green;
-}
-.card-two {
-    background-color: red;
-}
-.card-three {
-    background-color: blue;
-}
-.card-four {
-    background-color: yellow;
+.card {
+    width: 108px;
+    height: 150px;
 }
 
 .player-a-ctnr {
     position: absolute;
     width: 100%;
-    height: 20vh;
+    height: 25vh;
     border: 5px solid purple;
 }
 
 .player-b-ctnr {
     position: absolute;
     width: 100%;
-    height: 20vh;
+    height: 25vh;
     border: 5px solid pink;
 }
 
@@ -67,18 +63,4 @@
 
 .drop-ctnr > div, .deck-ctnr > div, .player-a-hand > div, .player-b-hand > div {
     display: inline-block;
-}
-
-.card-back {
-    width: 108px;
-    height: 150px;
-}
-
-/* Delete later - just used for testing */
-.card-gray {
-    background-color: gray;
-}
-
-.card-maroon {
-    background-color: maroon;
 }

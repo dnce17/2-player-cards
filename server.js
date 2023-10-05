@@ -2,6 +2,8 @@
 
 const express = require('express');
 const socket = require('socket.io');
+let Deck = require('card-deck');
+const {deck} = require('./public/poker-cards.js');
 
 // App Setup
 const app = express();
@@ -15,7 +17,12 @@ app.use(express.static('public'));
 // Allows socket to work on the server
 const io = socket(server);
 
+// Get the two players fighting
 playersID = {}
+
+// Get the poker card deck
+let pokerDeck = new Deck(deck);
+pokerDeck.shuffle();
 
 io.on('connection', function(socket) {
     console.log('A user has connected');
@@ -33,18 +40,20 @@ io.on('connection', function(socket) {
         socket.emit('board orienation');
     }
 
-    // Was for card one - might delete later
-    // socket.on('to hand', function(data) {
-    //     io.emit('to hand', [data, playersID])
-    // });
-
     socket.on('change location', function(data) {
         // io.emit('change location', [data, playersID])
         socket.broadcast.emit('change location', [data, playersID])
+        // console.log(data);
+    });
+
+    socket.on('drop success check', function(data) {
+        socket.broadcast.emit('drop success check', data)
+        console.log(data);
     });
 
     socket.on('draw', function(data) {
-        io.emit('draw', [data, playersID]);
+        io.emit('draw', [data, playersID, pokerDeck.draw()]);
+        // console.log(pokerDeck.remaining());
     });
 
 });
