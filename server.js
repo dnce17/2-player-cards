@@ -43,7 +43,7 @@ io.on('connection', function(socket) {
     socket.on('change location', function(data) {
         // io.emit('change location', [data, playersID])
         socket.broadcast.emit('change location', [data, playersID])
-        // console.log(data);
+        console.log(data);
     });
 
     socket.on('drop success check', function(data) {
@@ -52,9 +52,14 @@ io.on('connection', function(socket) {
     });
 
     socket.on('draw', function(data) {
-        io.emit('draw', [data, playersID, pokerDeck.draw()]);
+        // io.emit('draw', [data, playersID, pokerDeck.draw()]);
+        socket.emit('draw', [data, playersID, pokerDeck.draw()]);
         // console.log(pokerDeck.remaining());
     });
+
+    socket.on('show card back to opponent', function(data) {
+        socket.broadcast.emit('show card back to opponent', [data, playersID]);
+    })
 
 });
 

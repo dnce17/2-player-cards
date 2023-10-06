@@ -22,6 +22,7 @@ playersID = {}
 // Draw cards
 deckCtnr.addEventListener('click', function() {
     socket.emit('draw', socket.id);
+    socket.emit('show card back to opponent', socket.id);
 });
 
 function addDragEvt(card) {
@@ -35,7 +36,9 @@ function addDragEvt(card) {
         card.classList.remove('is-dragging');
 
         // Issue
-        socket.emit('change location', [socket.id, start])
+        let cardImg = this.src.split('/');
+        // console.log(cardImg);
+        socket.emit('change location', [socket.id, start, cardImg[cardImg.length - 1]])
     })
 }
 
@@ -94,27 +97,27 @@ socket.on('board orienation', function() {
 
 socket.on('change location', function(data) {
 
-    let playerID = data[0][0], cardIndex = data[0][1];
+    let playerID = data[0][0], cardIndex = data[0][1], cardImg = data[0][2];
 
     // Compare ID to check who did the action
     if (playerID == data[1].playerA) {
         // Issue = you assuming its the drop
-        // dropCtnr.appendChild(playerAHand.children[cardIndex]);
         if (enemyDropSuccess) {
-            dropCtnr.appendChild(playerAHand.children[cardIndex]);
+            playerAHand.removeChild(playerAHand.children[cardIndex]);
+            dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
         }
-        console.log(enemyDropSuccess);
+        // console.log(enemyDropSuccess);
         enemyDropSuccess = false;
-        console.log(enemyDropSuccess);
+        // console.log(enemyDropSuccess);
     }
     else {
         if (enemyDropSuccess) {
-            dropCtnr.appendChild(playerBHand.children[cardIndex]);
+            playerBHand.removeChild(playerBHand.children[cardIndex]);
+            dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
         }
-        // dropCtnr.appendChild(playerBHand.children[cardIndex]);
-        console.log(enemyDropSuccess);
+        // console.log(enemyDropSuccess);
         enemyDropSuccess = false;
-        console.log(enemyDropSuccess);
+        // console.log(enemyDropSuccess);
     }
 });
 
@@ -138,6 +141,17 @@ socket.on('draw', function(data) {
         for (let i = 0; i < playerBHand.children.length; i++) {
             addDragEvt(playerBHand.children[i]);
         }
+    }
+});
+
+// Opponent will see card back after draw
+socket.on('show card back to opponent', function(data) {
+    
+    if (data[0] == data[1].playerA) {
+        playerAHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
+    }
+    else {
+        playerBHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
     }
 });
 
