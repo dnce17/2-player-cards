@@ -3,7 +3,7 @@
 const express = require('express');
 const socket = require('socket.io');
 let Deck = require('card-deck');
-const {deck} = require('./public/poker-cards.js');
+const cardDeck = require('./public/poker-cards.js');
 
 // App Setup
 const app = express();
@@ -21,8 +21,40 @@ const io = socket(server);
 playersID = {}
 
 // Get the poker card deck
-let pokerDeck = new Deck(deck);
-pokerDeck.shuffle();
+let pokerDeck = new Deck(cardDeck());
+pokerDeck.draw();
+pokerDeck.draw();
+console.log(pokerDeck.remaining());
+pokerDeck = new Deck(cardDeck());
+console.log(pokerDeck.remaining());
+
+// Get both players starting hand
+function startingHand() {
+    // Reset deck
+    pokerDeck = new Deck(cardDeck());
+
+    let counter = 0;
+    let startHandA = [], startHandB = [];
+    pokerDeck.shuffle();
+
+    // Alternate the card added to each player's hand
+    for (let i = 0; i < 16; i++) {
+        let startCard = pokerDeck.draw();
+        if (counter % 2 == 0) {
+            startHandA.push(startCard);
+        }
+        else {
+            startHandB.push(startCard);
+        }
+        counter++;
+    }
+    
+    return [startHandA, startHandB];
+}
+
+// console.log("A: " + startHandA, startHandA.length);
+// console.log("B: " + startHandB, startHandB.length);
+// console.log(pokerDeck.remaining());
 
 io.on('connection', function(socket) {
     console.log('A user has connected');
@@ -38,21 +70,23 @@ io.on('connection', function(socket) {
 
         // socket.emit NOT broadcast so it only affects the owner of this socket
         socket.emit('board orienation');
+
+        // Add 8 cards from deck to both players' starting hand
+        let startHand = startingHand();
+        socket.broadcast.emit('player A starting hand', startHand[0]);
+        socket.emit('player B starting hand', startHand[1]);
     }
 
     socket.on('change location', function(data) {
         // io.emit('change location', [data, playersID])
         socket.broadcast.emit('change location', [data, playersID])
-        console.log(data);
     });
 
     socket.on('drop success check', function(data) {
         socket.broadcast.emit('drop success check', data)
-        console.log(data);
     });
 
     socket.on('draw', function(data) {
-        // io.emit('draw', [data, playersID, pokerDeck.draw()]);
         socket.emit('draw', [data, playersID, pokerDeck.draw()]);
         // console.log(pokerDeck.remaining());
     });
@@ -65,3 +99,7 @@ io.on('connection', function(socket) {
 
 // Credits
 // https://stackoverflow.com/questions/32674391/io-emit-vs-socket-emit
+
+// to do
+// starting hand
+// reshuffle drop oile into deck after deck runs out

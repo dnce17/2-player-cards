@@ -14,6 +14,8 @@ let dropCtnr = document.querySelector('.drop-ctnr');
 let dropZones = document.querySelectorAll('.drop-zone');
 let cards = document.querySelectorAll('.card');
 
+let startingHandCount = 8;
+
 // DEBUG purposes: To identify both players on browser
 playersID = {}
 
@@ -86,6 +88,32 @@ socket.on('isPlayerB', function(data) {
     // playerB.innerHTML += `<p>Player B: ${data[0]}</p>`;
     // playerA.innerHTML += `<p>Player A: ${data[1]}</p>`;
 });
+
+// Players' starting hand
+// CAUTION: this is broadcast all when player B enters
+function startingHand(playerHand, opponentHand, handCards) {
+    // Add player's starting hand
+    for (let i = 0; i < handCards.length; i++) {
+        playerHand.innerHTML += `<img src="img/poker-cards/${handCards[i]}" draggable="true" class="card">`;
+    }
+
+    // Add drag evt to only the player's OWN cards
+    for (let i = 0; i < playerHand.children.length; i++) {
+        addDragEvt(playerHand.children[i]);
+    }
+
+    // Don't let player see opponent hand
+    for (let i = 0; i < startingHandCount; i++) {
+        opponentHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
+    }
+}
+socket.on('player A starting hand', function(data) {
+    startingHand(playerAHand, playerBHand, data);
+});
+socket.on('player B starting hand', function(data) {
+    startingHand(playerBHand, playerAHand, data);
+});
+
 
 // Establish both player's view 
 socket.on('board orienation', function() {
