@@ -21,12 +21,18 @@ const io = socket(server);
 playersID = {}
 
 // Get the poker card deck
-let pokerDeck = new Deck(cardDeck());
-pokerDeck.draw();
-pokerDeck.draw();
-console.log(pokerDeck.remaining());
-pokerDeck = new Deck(cardDeck());
-console.log(pokerDeck.remaining());
+// let pokerDeck = new Deck(cardDeck());
+
+// debug deck
+let pokerDeck = new Deck([
+    "9_of_clubs.png",
+    "2_of_diamonds.png",
+    "3_of_hearts.png",
+    "4_of_spades.png",
+    "6_of_clubs.png",
+    "7_of_diamonds.png",
+    "8_of_hearts.png",
+]);
 
 // Get both players starting hand
 function startingHand() {
@@ -63,6 +69,16 @@ io.on('connection', function(socket) {
     if (io.engine.clientsCount == 1) {
         playersID.playerA = socket.id;
         io.emit('isPlayerA',  playersID.playerA);
+
+        pokerDeck = new Deck([
+            "2_of_diamonds.png",
+            "3_of_hearts.png",
+            "4_of_spades.png",
+            "6_of_clubs.png",
+            "7_of_diamonds.png",
+            "8_of_hearts.png",
+        ]);
+
     } 
     else {
         playersID.playerB = socket.id;
@@ -71,10 +87,21 @@ io.on('connection', function(socket) {
         // socket.emit NOT broadcast so it only affects the owner of this socket
         socket.emit('board orienation');
 
+        // debug purposes - DELETE later
+        pokerDeck = new Deck([
+            "2_of_diamonds.png",
+            "3_of_hearts.png",
+            "4_of_spades.png",
+            "6_of_clubs.png",
+            "7_of_diamonds.png",
+            "8_of_hearts.png",
+        ]);
+
         // Add 8 cards from deck to both players' starting hand
-        let startHand = startingHand();
-        socket.broadcast.emit('player A starting hand', startHand[0]);
-        socket.emit('player B starting hand', startHand[1]);
+        // let startHand = startingHand();
+        // socket.broadcast.emit('player A starting hand', startHand[0]);
+        // socket.emit('player B starting hand', startHand[1]);
+        // console.log(pokerDeck.remaining());
     }
 
     socket.on('change location', function(data) {
@@ -93,7 +120,21 @@ io.on('connection', function(socket) {
 
     socket.on('show card back to opponent', function(data) {
         socket.broadcast.emit('show card back to opponent', [data, playersID]);
-    })
+    });
+
+    socket.on('deck count', function() {
+        io.emit('deck count');
+    });
+
+    // CHECKPOINT!!
+    socket.on('reshuffle to deck', function(data) {
+        // pokerDeck.shuffleToBottom(data);
+        console.log("Server: " + data);
+        pokerDeck = new Deck(data);
+        pokerDeck.shuffle();
+        console.log(pokerDeck);
+        io.emit('reshuffle to deck', pokerDeck.remaining());
+    });
 
 });
 
@@ -101,5 +142,6 @@ io.on('connection', function(socket) {
 // https://stackoverflow.com/questions/32674391/io-emit-vs-socket-emit
 
 // to do
-// starting hand
+// starting hand - CHECK
 // reshuffle drop oile into deck after deck runs out
+// add count to deck - CHECK

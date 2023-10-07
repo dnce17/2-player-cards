@@ -64,3 +64,11 @@
 .drop-ctnr > div, .deck-ctnr > div, .player-a-hand > div, .player-b-hand > div {
     display: inline-block;
 }
+
+.deck-count {
+    font-size: large;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}   

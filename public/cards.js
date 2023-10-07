@@ -13,6 +13,7 @@ let deckCtnr = document.querySelector('.deck-ctnr');
 let dropCtnr = document.querySelector('.drop-ctnr');
 let dropZones = document.querySelectorAll('.drop-zone');
 let cards = document.querySelectorAll('.card');
+let deckCount = document.querySelector('.deck-count');
 
 let startingHandCount = 8;
 
@@ -25,6 +26,31 @@ playersID = {}
 deckCtnr.addEventListener('click', function() {
     socket.emit('draw', socket.id);
     socket.emit('show card back to opponent', socket.id);
+    socket.emit('deck count');
+    if (parseInt(deckCount.textContent) == 1) {
+        console.log('deck out of cards');
+        let returnCards = [];
+
+        // All cards except the top card of drop goes back to deck
+        for (let i = 0; i < dropCtnr.children.length - 1; i++) {
+            let cardImg = dropCtnr.children[i].src.split('/');
+            returnCards.push(cardImg[cardImg.length - 1]);
+        }
+
+        // let topCard = dropCtnr.children[dropCtnr.children.length - 1].src.split('/');
+        // console.log(topCard);
+        // while (dropCtnr.hasChildNodes()) {
+        //     dropCtnr.removeChild(dropCtnr.firstChild);
+        // }
+        // dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card">`;
+        
+        // CHECKPOINT
+        console.log("Client: " + returnCards);
+        socket.emit('reshuffle to deck', returnCards);
+        // Issue for some reason, it's one number less
+        // console.log(returnCards.length);
+        // deckCount.textContent = 6;
+    }
 });
 
 function addDragEvt(card) {
@@ -172,6 +198,10 @@ socket.on('draw', function(data) {
     }
 });
 
+socket.on('deck count', function(data) {
+    deckCount.textContent = parseInt(deckCount.textContent) - 1;
+})
+
 // Opponent will see card back after draw
 socket.on('show card back to opponent', function(data) {
     
@@ -181,6 +211,18 @@ socket.on('show card back to opponent', function(data) {
     else {
         playerBHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
     }
+});
+
+socket.on('reshuffle to deck', function(data) {
+    deckCount.textContent = data;
+
+    let topCard = dropCtnr.children[dropCtnr.children.length - 1].src.split('/');
+    // console.log(topCard);
+    while (dropCtnr.hasChildNodes()) {
+        dropCtnr.removeChild(dropCtnr.firstChild);
+    }
+    dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card">`;
+    
 });
 
 // let Deck = require('card-deck');
