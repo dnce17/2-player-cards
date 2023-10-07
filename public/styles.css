@@ -2,17 +2,14 @@
     box-sizing: border-box;
 }
 
+/* body {
+    background-color: green;
+} */
+
 .arena-ctnr {
     position: relative;
     height: 100vh;
     border: 1px solid orange;
-}
-
-.field-cards-ctnr {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .field-cards-ctnr > div {
@@ -34,9 +31,14 @@
     transform: translate(-50%, -50%);
 }
 
+.deck-ctnr {
+    left: 50px;
+}
+
 .card {
     width: 108px;
     height: 150px;
+    border-radius: 9px;
 }
 
 .player-a-ctnr {
@@ -53,6 +55,18 @@
     border: 5px solid pink;
 }
 
+.drop-ctnr > div, .deck-ctnr > div, .player-a-hand > div, .player-b-hand > div {
+    display: inline-block;
+}
+
+.deck-count {
+    font-size: large;
+}   
+
+.player-a-hand .card:not(:first-child), .player-b-hand .card:not(:first-child) {
+    margin-left: -60px;
+}
+
 .top {
     top: 0;
 }
@@ -61,14 +75,13 @@
     bottom: 0;
 }
 
-.drop-ctnr > div, .deck-ctnr > div, .player-a-hand > div, .player-b-hand > div {
-    display: inline-block;
+.hand-center {
+    text-align: center;
 }
 
-.deck-count {
-    font-size: large;
+.center {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-}   
+}

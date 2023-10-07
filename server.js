@@ -21,18 +21,7 @@ const io = socket(server);
 playersID = {}
 
 // Get the poker card deck
-// let pokerDeck = new Deck(cardDeck());
-
-// debug deck
-let pokerDeck = new Deck([
-    "9_of_clubs.png",
-    "2_of_diamonds.png",
-    "3_of_hearts.png",
-    "4_of_spades.png",
-    "6_of_clubs.png",
-    "7_of_diamonds.png",
-    "8_of_hearts.png",
-]);
+let pokerDeck = new Deck(cardDeck());
 
 // Get both players starting hand
 function startingHand() {
@@ -58,10 +47,6 @@ function startingHand() {
     return [startHandA, startHandB];
 }
 
-// console.log("A: " + startHandA, startHandA.length);
-// console.log("B: " + startHandB, startHandB.length);
-// console.log(pokerDeck.remaining());
-
 io.on('connection', function(socket) {
     console.log('A user has connected');
     // console.log(`User Count: ${io.engine.clientsCount}, ${socket.id}`);
@@ -69,16 +54,6 @@ io.on('connection', function(socket) {
     if (io.engine.clientsCount == 1) {
         playersID.playerA = socket.id;
         io.emit('isPlayerA',  playersID.playerA);
-
-        pokerDeck = new Deck([
-            "2_of_diamonds.png",
-            "3_of_hearts.png",
-            "4_of_spades.png",
-            "6_of_clubs.png",
-            "7_of_diamonds.png",
-            "8_of_hearts.png",
-        ]);
-
     } 
     else {
         playersID.playerB = socket.id;
@@ -87,25 +62,16 @@ io.on('connection', function(socket) {
         // socket.emit NOT broadcast so it only affects the owner of this socket
         socket.emit('board orienation');
 
-        // debug purposes - DELETE later
-        pokerDeck = new Deck([
-            "2_of_diamonds.png",
-            "3_of_hearts.png",
-            "4_of_spades.png",
-            "6_of_clubs.png",
-            "7_of_diamonds.png",
-            "8_of_hearts.png",
-        ]);
 
-        // Add 8 cards from deck to both players' starting hand
-        // let startHand = startingHand();
-        // socket.broadcast.emit('player A starting hand', startHand[0]);
-        // socket.emit('player B starting hand', startHand[1]);
-        // console.log(pokerDeck.remaining());
+        // Add 8 cards from deck to both players' starting hand + place card in drop to start
+        let startHand = startingHand();
+        socket.broadcast.emit('player A starting hand', startHand[0]);
+        socket.emit('player B starting hand', startHand[1]);
+        io.emit('starting drop card', pokerDeck.draw());
+        console.log(pokerDeck.remaining());
     }
 
     socket.on('change location', function(data) {
-        // io.emit('change location', [data, playersID])
         socket.broadcast.emit('change location', [data, playersID])
     });
 
@@ -115,7 +81,6 @@ io.on('connection', function(socket) {
 
     socket.on('draw', function(data) {
         socket.emit('draw', [data, playersID, pokerDeck.draw()]);
-        // console.log(pokerDeck.remaining());
     });
 
     socket.on('show card back to opponent', function(data) {
@@ -123,13 +88,10 @@ io.on('connection', function(socket) {
     });
 
     socket.on('deck count', function() {
-        io.emit('deck count');
+        io.emit('deck count', pokerDeck.remaining());
     });
 
-    // CHECKPOINT!!
     socket.on('reshuffle to deck', function(data) {
-        // pokerDeck.shuffleToBottom(data);
-        console.log("Server: " + data);
         pokerDeck = new Deck(data);
         pokerDeck.shuffle();
         console.log(pokerDeck);
