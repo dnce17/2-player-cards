@@ -7,6 +7,7 @@
     </head>
     <body>
         <div class="arena-ctnr">
+            <!-- <div class="msg center">Waiting for another player...</div> -->
             <div class="field-cards-ctnr center">
                 <div class="drop-ctnr drop-zone">
                 </div>
@@ -24,8 +25,24 @@
                 <div class="player-a-hand"></div>
             </div>
         </div>
+        <div class="side-ctnr">
+            <div class="chat-ctnr">
+                <div class="output-ctnr">
+                    <div>User A: Test Message</div>
+                    <div>User B: Test Message</div>
+                </div>
+                <div class="input-ctnr">
+                    <input type="text" class="input" placeholder="Type message here">
+                    <button class="send-btn">Send</button>
+                </div>
+            </div>
+            <div class="btns-ctnr">
+                <button class="rematch-btn">Offer Rematch</button>
+            </div>
+        </div>
     </body>
     <script src="/cards.js"></script>
+    <script src="/chat.js"></script>
     <!-- <script src="/bundle.js"></script> -->
 </html>
 

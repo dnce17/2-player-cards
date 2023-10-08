@@ -47,6 +47,7 @@ function startingHand() {
     return [startHandA, startHandB];
 }
 
+
 io.on('connection', function(socket) {
     console.log('A user has connected');
     // console.log(`User Count: ${io.engine.clientsCount}, ${socket.id}`);
@@ -65,6 +66,7 @@ io.on('connection', function(socket) {
 
         // Add 8 cards from deck to both players' starting hand + place card in drop to start
         let startHand = startingHand();
+        // io.emit('display drop and deck');
         socket.broadcast.emit('player A starting hand', startHand[0]);
         socket.emit('player B starting hand', startHand[1]);
         io.emit('starting drop card', pokerDeck.draw());
@@ -98,7 +100,33 @@ io.on('connection', function(socket) {
         io.emit('reshuffle to deck', pokerDeck.remaining());
     });
 
+    socket.on('offer rematch', function() {
+        socket.broadcast.emit('offer rematch');
+
+        // Use above when finished debugging with this
+        // socket.emit('offer rematch');
+    });
+
+    socket.on('accept rematch', function(data) {
+        io.emit('accept rematch');
+
+        // Reset everything for the rematch
+        let startHand = startingHand();
+        if (data == playersID.playerA) {
+            socket.emit('player A starting hand', startHand[0]);
+            socket.broadcast.emit('player B starting hand', startHand[1]);
+        }
+        else {
+            socket.broadcast.emit('player A starting hand', startHand[0]);
+            socket.emit('player B starting hand', startHand[1]);
+        }
+        io.emit('starting drop card', pokerDeck.draw());
+        io.emit('deck count', pokerDeck.remaining());
+    })
 });
+
+// To restart game
+// all we need is to gather all cards to the deck and redistribute the starting hand
 
 // Credits
 // https://stackoverflow.com/questions/32674391/io-emit-vs-socket-emit

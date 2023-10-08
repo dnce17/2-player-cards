@@ -16,6 +16,7 @@ let cards = document.querySelectorAll('.card');
 let deckCount = document.querySelector('.deck-count');
 
 let startingHandCount = 8;
+let rematchBtn = document.querySelector('.rematch-btn');
 
 // DEBUG purposes: To identify both players on browser
 playersID = {}
@@ -39,6 +40,10 @@ deckCtnr.addEventListener('click', function() {
         console.log('Returned Cards: ' + returnCards);
         socket.emit('reshuffle to deck', returnCards);
     }
+});
+
+rematchBtn.addEventListener('click', function() {
+    socket.emit('offer rematch');
 });
 
 function addDragEvt(card) {
@@ -206,8 +211,52 @@ socket.on('reshuffle to deck', function(data) {
         dropCtnr.removeChild(dropCtnr.firstChild);
     }
     dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card">`;
-    
 });
+
+// socket.on('display drop and deck', function() {
+//     let fieldCtnr = document.querySelector('.field-cards-ctnr');
+//     let msg = document.querySelector('.msg');
+
+//     fieldCtnr.classList.remove('hidden');
+//     msg.classList.add('hidden');
+// });
+
+socket.on('offer rematch', function() {
+    let btnsCtnr = document.querySelector('.btns-ctnr');
+
+    // CAUTION: Depending on what you add, this may need to be altered later
+    if (btnsCtnr.children.length == 1) {
+        let acceptBtn = document.createElement('button');
+        acceptBtn.classList.add('accept-btn');
+        acceptBtn.innerHTML = 'Accept Rematch';
+
+        acceptBtn.addEventListener('click', function() {
+            // console.log('accepted match');
+            socket.emit('accept rematch', socket.id);
+        });
+
+        btnsCtnr.appendChild(acceptBtn);
+    }
+})
+
+socket.on('accept rematch', function() {
+    document.querySelectorAll('.card').forEach(function(card) {
+        if (!card.classList.contains('card-back')) {
+            card.remove();
+        }
+    });
+
+    let btnsCtnr = document.querySelector('.btns-ctnr'); 
+    for (let i = 0; i < btnsCtnr.children.length; i++) {
+        if (btnsCtnr.children[i].classList.contains('accept-btn')) {
+            btnsCtnr.children[i].remove();
+        }
+    }
+    if (btnsCtnr.children.length > 1) {
+        btnsCtnr.removeChild(btnsCtnr.children[btnsCtnr.children.length - 1]);
+    }
+});
+
 
 // Credits
 // https://stackoverflow.com/questions/66771371/how-to-get-index-of-div-in-parent-div
@@ -216,3 +265,6 @@ socket.on('reshuffle to deck', function(data) {
     // Nodelist and HTMLCollection are both NOT an array
 // https://www.youtube.com/watch?v=ecKw7FfikwI&t=1005s
 // https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
+// https://stackoverflow.com/questions/11515383/why-is-element-innerhtml-bad-code
+
+// To look over if I want to use sqlite

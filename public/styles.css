@@ -8,7 +8,8 @@
 
 .arena-ctnr {
     position: relative;
-    height: 100vh;
+    height: 97vh;
+    width: 70vw;
     border: 1px solid orange;
 }
 
@@ -84,4 +85,52 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.side-ctnr {
+    position: relative;
+    border: 1px solid gold;
+    height: 97vh;
+    width: 27vw;
+}
+
+.chat-ctnr {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* transform: translateY(-50%); */
+    height: 75vh;
+    width: 25vw;
+    border: 1px solid darkblue;
+}
+
+.input-ctnr {
+    position: absolute;
+    bottom: 0;
+}
+
+.input {
+    width: 20vw;
+    border-radius: 10px;
+    border: 1px solid silver;
+    padding: 10px;
+}
+
+.output-ctnr div {
+    border: 1px solid green;
+    padding: 10px;
+}
+
+.btns-ctnr {
+    position: absolute;
+    bottom: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.arena-ctnr, .side-ctnr {
+    display: inline-block;
 }
