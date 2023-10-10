@@ -9,7 +9,7 @@
 .arena-ctnr {
     position: relative;
     height: 97vh;
-    width: 70vw;
+    /* width: 70vw; */
     border: 1px solid orange;
 }
 
@@ -63,6 +63,12 @@
 .deck-count {
     font-size: large;
 }   
+
+/* Giving height prevents collapse from no card in hand, preventing user from putting card in hand */
+.player-a-hand, .player-b-hand {
+    border: 5px solid brown;
+    height: 150px;
+}
 
 .player-a-hand .card:not(:first-child), .player-b-hand .card:not(:first-child) {
     margin-left: -60px;
@@ -131,6 +137,6 @@
     display: none;
 }
 
-.arena-ctnr, .side-ctnr {
+/* .arena-ctnr, .side-ctnr {
     display: inline-block;
-}
+} */

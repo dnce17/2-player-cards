@@ -55,6 +55,8 @@ io.on('connection', function(socket) {
     if (io.engine.clientsCount == 1) {
         playersID.playerA = socket.id;
         io.emit('isPlayerA',  playersID.playerA);
+
+        socket.emit('disable player B drop zone');
     } 
     else {
         playersID.playerB = socket.id;
@@ -70,15 +72,32 @@ io.on('connection', function(socket) {
         socket.broadcast.emit('player A starting hand', startHand[0]);
         socket.emit('player B starting hand', startHand[1]);
         io.emit('starting drop card', pokerDeck.draw());
-        console.log(pokerDeck.remaining());
+
+        // Prevents player A from accessing player B's drop-zone
+        socket.broadcast.emit('enable player A drop zone');
+        // Vice versa
+        socket.emit('enable player B drop zone');
+
+        // console.log(pokerDeck.remaining());
     }
 
     socket.on('change location', function(data) {
-        socket.broadcast.emit('change location', [data, playersID])
+        socket.broadcast.emit('change location', [data, playersID]);
+
+        // debug purposes
+        // socket.emit('change location', [data, playersID]);
+        // console.log(data[data.length - 1]);
+    });
+
+    socket.on('add back drag evt to cards in drop', function() {
+        socket.emit('add back drag evt to cards in drop');
     });
 
     socket.on('drop success check', function(data) {
-        socket.broadcast.emit('drop success check', data)
+        socket.broadcast.emit('drop success check', data);
+        
+        // debug
+        // io.emit('drop success check', data);
     });
 
     socket.on('draw', function(data) {

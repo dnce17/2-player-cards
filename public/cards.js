@@ -42,45 +42,74 @@ deckCtnr.addEventListener('click', function() {
     }
 });
 
-rematchBtn.addEventListener('click', function() {
-    socket.emit('offer rematch');
-});
+// rematchBtn.addEventListener('click', function() {
+//     socket.emit('offer rematch');
+// });
 
+// Give cards drag event
+let startLocation = null;
 function addDragEvt(card) {
     let start = null;
     card.addEventListener('dragstart', function() {
         card.classList.add('is-dragging');
         start = Array.prototype.indexOf.call(card.parentElement.children, card);
+
+        startLocation = card.parentElement.className;
+        // console.log(startLocation);  
     })
 
     card.addEventListener('dragend', function(e) {
         card.classList.remove('is-dragging');
 
         let cardImg = this.src.split('/');
-        socket.emit('change location', [socket.id, start, cardImg[cardImg.length - 1]])
+        socket.emit('change location', [socket.id, start, cardImg[cardImg.length - 1], startLocation, target]);
     })
 }
-
-// Drag cards
 cards.forEach(function(card) {
     addDragEvt(card);
 });
 
 let enemyDropSuccess = false;
-dropZones.forEach(function(dropZone) {
+let target = null;
+
+// Allow certain areas to be drop zone
+function addDropEvt(dropZone) {
     dropZone.addEventListener('dragover', function(e) {
         e.preventDefault();
-    })
+    });
 
     dropZone.addEventListener('drop', function(e) {
         const curTask = document.querySelector('.is-dragging');
-        this.appendChild(curTask);
+        dropZone.appendChild(curTask);
+
+        // CHECKPOINT
+        // console.log(this.className);
+        target = dropZone.className;
 
         // Send info that drop was success to server w/ true
         socket.emit('drop success check', true)
-    })
+    });
+}
+addDropEvt(dropCtnr);
 
-});
+// dropZones.forEach(function(dropZone) {
+//     dropZone.addEventListener('dragover', function(e) {
+//         e.preventDefault();
+//     });
+
+//     dropZone.addEventListener('drop', function(e) {
+//         const curTask = document.querySelector('.is-dragging');
+//         this.appendChild(curTask);
+
+//         // CHECKPOINT
+//         // console.log(this.className);
+//         target = this.className;
+
+//         // Send info that drop was success to server w/ true
+//         socket.emit('drop success check', true)
+//     });
+
+// });
 
 // LISTEN FOR EVENTS EMITTED "FROM" THE SERVER (BACKEND)
 // Get players who connect
@@ -121,7 +150,7 @@ function startingHand(playerHand, opponentHand, handCards) {
 
     // Don't let player see opponent hand
     for (let i = 0; i < startingHandCount; i++) {
-        opponentHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
+        opponentHand.innerHTML += '<img src="img/poker-back.png" draggable="false" class="card">';
     }
 }
 socket.on('player A starting hand', function(data) {
@@ -134,6 +163,14 @@ socket.on('starting drop card', function(data) {
     // console.log(data);
     dropCtnr.innerHTML += `<img src="img/poker-cards/${data}" draggable="true" class="card">`;
 });
+socket.on('enable player A drop zone', function() {
+    addDropEvt(playerAHand);
+    // console.log('A now drop zone');
+});
+socket.on('enable player B drop zone', function() {
+    addDropEvt(playerBHand);
+    // console.log('B now drop zone');
+});
 
 
 // Establish both player's view 
@@ -144,29 +181,67 @@ socket.on('board orienation', function() {
     playerA.className += ' top';
 });
 
+function changeLocation(destination, playerHand, playerHandClass, index, cardImg) {
+    if (destination.includes('drop-ctnr')) {
+        playerHand.removeChild(playerHand.children[index]);
+        dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
+    }
+    else if (destination.includes(playerHandClass)) {
+        dropCtnr.removeChild(dropCtnr.children[dropCtnr.children.length - 1]);
+        playerHand.innerHTML += '<img src="img/poker-back.png" draggable="false" class="card">';
+    }
+    enemyDropSuccess = false;
+    // console.log('change location success');
+}
+
 socket.on('change location', function(data) {
+
+    let origin = data[0][3];
+    let destination = data[0][data[0].length - 1];
 
     let playerID = data[0][0], cardIndex = data[0][1], cardImg = data[0][2];
 
-    // Compare ID to check who did the action
-    if (playerID == data[1].playerA) {
-        if (enemyDropSuccess) {
-            playerAHand.removeChild(playerAHand.children[cardIndex]);
-            dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
+    // console.log(origin);
+    // console.log(destination);
+
+    if (enemyDropSuccess && origin != destination) {
+        // Compare ID to check who did the action
+        if (playerID == data[1].playerA) {
+            // OLD version where drop is only drop zone
+            // if (enemyDropSuccess) {
+            //     playerAHand.removeChild(playerAHand.children[cardIndex]);
+            //     dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
+            // }
+            // enemyDropSuccess = false;
+
+            changeLocation(destination, playerAHand, 'player-a-hand', cardIndex, cardImg);
+
+            // One player adding card to drop resets opponent's card drag evt in 
+            // their drop, so this adds it back
+            socket.emit('add back drag evt to cards in drop');
         }
-        enemyDropSuccess = false;
+        else {
+            // if (enemyDropSuccess) {
+            //     playerBHand.removeChild(playerBHand.children[cardIndex]);
+            //     dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
+            // }
+
+            changeLocation(destination, playerBHand, 'player-b-hand', cardIndex, cardImg);
+            socket.emit('add back drag evt to cards in drop');
+        }
     }
-    else {
-        if (enemyDropSuccess) {
-            playerBHand.removeChild(playerBHand.children[cardIndex]);
-            dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
-        }
-        enemyDropSuccess = false;
+});
+
+socket.on('add back drag evt to cards in drop', function() {
+    for (let i = 0; i <  dropCtnr.children.length; i++) {
+        addDragEvt(dropCtnr.children[i]);
+        console.log('added back drag evt to cards in drop');
     }
 });
 
 socket.on('drop success check', function(data) {
     enemyDropSuccess = data;
+    // console.log('success');
 })
 
 socket.on('draw', function(data) {
@@ -268,3 +343,6 @@ socket.on('accept rematch', function() {
 // https://stackoverflow.com/questions/11515383/why-is-element-innerhtml-bad-code
 
 // To look over if I want to use sqlite
+
+// Issue
+// if player drags card from hand back to hand,it causes issues = will just make a return fro drop to hand button
