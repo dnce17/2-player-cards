@@ -15,6 +15,9 @@ let dropZones = document.querySelectorAll('.drop-zone');
 let cards = document.querySelectorAll('.card');
 let deckCount = document.querySelector('.deck-count');
 
+let endTurnBtn = document.querySelector('.turn-btn');
+let whoseTurn = document.querySelector('.whose-turn');
+
 let startingHandCount = 8;
 let rematchBtn = document.querySelector('.rematch-btn');
 
@@ -54,15 +57,28 @@ function addDragEvt(card) {
         card.classList.add('is-dragging');
         start = Array.prototype.indexOf.call(card.parentElement.children, card);
 
-        startLocation = card.parentElement.className;
-        // console.log(startLocation);  
+        startLocation = card.parentElement.className; 
     })
 
     card.addEventListener('dragend', function(e) {
         card.classList.remove('is-dragging');
 
         let cardImg = this.src.split('/');
-        socket.emit('change location', [socket.id, start, cardImg[cardImg.length - 1], startLocation, target]);
+
+        if (movedToDeck == true) {
+            socket.emit('return to deck', [cardImg[cardImg.length - 1], socket.id, startLocation]);
+            deckCtnr.children[deckCtnr.children.length - 1].remove();
+            movedToDeck = false;
+        }
+        else {
+            socket.emit('change location', [
+                socket.id, 
+                start, 
+                cardImg[cardImg.length - 1],
+                startLocation, 
+                target
+            ]);
+        }
     })
 }
 cards.forEach(function(card) {
@@ -73,6 +89,7 @@ let enemyDropSuccess = false;
 let target = null;
 
 // Allow certain areas to be drop zone
+let movedToDeck = false;
 function addDropEvt(dropZone) {
     dropZone.addEventListener('dragover', function(e) {
         e.preventDefault();
@@ -82,34 +99,30 @@ function addDropEvt(dropZone) {
         const curTask = document.querySelector('.is-dragging');
         dropZone.appendChild(curTask);
 
-        // CHECKPOINT
-        // console.log(this.className);
         target = dropZone.className;
 
         // Send info that drop was success to server w/ true
-        socket.emit('drop success check', true)
+        socket.emit('drop success check', true);
+
+        if (this.classList.contains('deck-ctnr')) {
+            // console.log('moved to deck');
+            movedToDeck = true;
+        }
     });
 }
 addDropEvt(dropCtnr);
+addDropEvt(deckCtnr);
 
-// dropZones.forEach(function(dropZone) {
-//     dropZone.addEventListener('dragover', function(e) {
-//         e.preventDefault();
-//     });
+endTurnBtn.addEventListener('click', function() {
+    // let whoseTurn = document.querySelector('.whose-turn');
+    whoseTurn.textContent = "Your opponent's turn";
+    endTurnBtn.disabled = true;
 
-//     dropZone.addEventListener('drop', function(e) {
-//         const curTask = document.querySelector('.is-dragging');
-//         this.appendChild(curTask);
+    socket.emit('end turn');
 
-//         // CHECKPOINT
-//         // console.log(this.className);
-//         target = this.className;
+    console.log('end turn');
+});
 
-//         // Send info that drop was success to server w/ true
-//         socket.emit('drop success check', true)
-//     });
-
-// });
 
 // LISTEN FOR EVENTS EMITTED "FROM" THE SERVER (BACKEND)
 // Get players who connect
@@ -117,9 +130,6 @@ socket.on('isPlayerA', function(data) {
     // No point adding to playersID b/c player B not in room yet, so would not get data
     self.id = data;
     playerAName.textContent = `Player A: ${data}`;
-
-    // This causes player A's hand to be undraggable for some reason that Idk
-    // playerA.innerHTML += `<p>Player A: ${data}</p>`;
 });
 
 socket.on('isPlayerB', function(data) {
@@ -129,10 +139,6 @@ socket.on('isPlayerB', function(data) {
 
     playerAName.textContent = `Player A: ${playersID.playerA}`;
     playerBName.textContent = `Player B: ${playersID.playerB}`;
-
-    // This causes player B's hand to be undraggable for some reason that Idk
-    // playerB.innerHTML += `<p>Player B: ${data[0]}</p>`;
-    // playerA.innerHTML += `<p>Player A: ${data[1]}</p>`;
 });
 
 // Players' starting hand
@@ -160,18 +166,24 @@ socket.on('player B starting hand', function(data) {
     startingHand(playerBHand, playerAHand, data);
 });
 socket.on('starting drop card', function(data) {
-    // console.log(data);
     dropCtnr.innerHTML += `<img src="img/poker-cards/${data}" draggable="true" class="card">`;
 });
 socket.on('enable player A drop zone', function() {
     addDropEvt(playerAHand);
-    // console.log('A now drop zone');
 });
 socket.on('enable player B drop zone', function() {
     addDropEvt(playerBHand);
-    // console.log('B now drop zone');
+});
+socket.on('go second', function() {
+    endTurnBtn.disabled = true;
+    whoseTurn.textContent = "Your opponent's turn";
 });
 
+// Tell opponent it's their turn and enable their End Turn btn
+socket.on('end turn', function() {
+    endTurnBtn.disabled = false;
+    whoseTurn.textContent = 'Your turn';
+});
 
 // Establish both player's view 
 socket.on('board orienation', function() {
@@ -191,29 +203,19 @@ function changeLocation(destination, playerHand, playerHandClass, index, cardImg
         playerHand.innerHTML += '<img src="img/poker-back.png" draggable="false" class="card">';
     }
     enemyDropSuccess = false;
-    // console.log('change location success');
+    console.log(destination);
 }
 
 socket.on('change location', function(data) {
 
-    let origin = data[0][3];
+    let origin = data[0][data[0].length - 2];
     let destination = data[0][data[0].length - 1];
 
     let playerID = data[0][0], cardIndex = data[0][1], cardImg = data[0][2];
 
-    // console.log(origin);
-    // console.log(destination);
-
     if (enemyDropSuccess && origin != destination) {
         // Compare ID to check who did the action
         if (playerID == data[1].playerA) {
-            // OLD version where drop is only drop zone
-            // if (enemyDropSuccess) {
-            //     playerAHand.removeChild(playerAHand.children[cardIndex]);
-            //     dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
-            // }
-            // enemyDropSuccess = false;
-
             changeLocation(destination, playerAHand, 'player-a-hand', cardIndex, cardImg);
 
             // One player adding card to drop resets opponent's card drag evt in 
@@ -221,27 +223,41 @@ socket.on('change location', function(data) {
             socket.emit('add back drag evt to cards in drop');
         }
         else {
-            // if (enemyDropSuccess) {
-            //     playerBHand.removeChild(playerBHand.children[cardIndex]);
-            //     dropCtnr.innerHTML += `<img src="img/poker-cards/${cardImg}" draggable="true" class="card">`;
-            // }
-
             changeLocation(destination, playerBHand, 'player-b-hand', cardIndex, cardImg);
             socket.emit('add back drag evt to cards in drop');
         }
     }
 });
 
+// CHECKPOINT
+// NEED TO add: move from drop to deck reflect in opponents
+socket.on('return to deck', function(data) {
+    console.log('return to deck');
+    startLocation = data[1];
+
+    // Do not need compare player ID b/c drop is shared
+    if (startLocation.includes('drop-ctnr')) {
+        dropCtnr.children[dropCtnr.children.length - 1].remove();
+        startLocation = null;
+    }
+    if (data[0] == data[2].playerA) {
+        console.log('alter A Hand');
+        playerAHand.removeChild(playerAHand.children[playerAHand.children.length - 1]);
+    }
+    else if (data[0] == data[2].playerB) {
+        console.log('alter B Hand');
+        playerBHand.removeChild(playerBHand.children[playerBHand.children.length - 1]);
+    }
+});
+
 socket.on('add back drag evt to cards in drop', function() {
     for (let i = 0; i <  dropCtnr.children.length; i++) {
         addDragEvt(dropCtnr.children[i]);
-        console.log('added back drag evt to cards in drop');
     }
 });
 
 socket.on('drop success check', function(data) {
     enemyDropSuccess = data;
-    // console.log('success');
 })
 
 socket.on('draw', function(data) {
@@ -263,7 +279,6 @@ socket.on('draw', function(data) {
 });
 
 socket.on('deck count', function(data) {
-    // deckCount.textContent = parseInt(deckCount.textContent) - 1;
     deckCount.textContent = data;
 })
 
@@ -288,13 +303,16 @@ socket.on('reshuffle to deck', function(data) {
     dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card">`;
 });
 
-// socket.on('display drop and deck', function() {
-//     let fieldCtnr = document.querySelector('.field-cards-ctnr');
-//     let msg = document.querySelector('.msg');
+socket.on('display game materials', function() {
+    let fieldCtnr = document.querySelector('.field-cards-ctnr');
+    let turnCtnr = document.querySelector('.turn-ctnr');
+    let msg = document.querySelector('.msg');
 
-//     fieldCtnr.classList.remove('hidden');
-//     msg.classList.add('hidden');
-// });
+    fieldCtnr.classList.remove('hidden');
+    turnCtnr.classList.remove('hidden');
+    msg.classList.add('hidden');
+    
+});
 
 socket.on('offer rematch', function() {
     let btnsCtnr = document.querySelector('.btns-ctnr');

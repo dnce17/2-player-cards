@@ -57,7 +57,7 @@ io.on('connection', function(socket) {
         io.emit('isPlayerA',  playersID.playerA);
 
         socket.emit('disable player B drop zone');
-    } 
+    }
     else {
         playersID.playerB = socket.id;
         io.emit('isPlayerB', [playersID.playerA, playersID.playerB]);
@@ -68,7 +68,7 @@ io.on('connection', function(socket) {
 
         // Add 8 cards from deck to both players' starting hand + place card in drop to start
         let startHand = startingHand();
-        // io.emit('display drop and deck');
+        io.emit('display game materials');
         socket.broadcast.emit('player A starting hand', startHand[0]);
         socket.emit('player B starting hand', startHand[1]);
         io.emit('starting drop card', pokerDeck.draw());
@@ -78,15 +78,30 @@ io.on('connection', function(socket) {
         // Vice versa
         socket.emit('enable player B drop zone');
 
-        // console.log(pokerDeck.remaining());
+        // Determine who go first
+        let num = Math.floor(Math.random() * 2);
+        // A go first if 0, B first if 1
+        if (num == 0) {
+            // HTML is adjusted by default for going first, so this emit only required
+            socket.emit('go second');
+        }
+        else {
+            socket.broadcast.emit('go second');
+        }
     }
+
+    socket.on('end turn', function(){
+        socket.broadcast.emit('end turn');
+    });
 
     socket.on('change location', function(data) {
         socket.broadcast.emit('change location', [data, playersID]);
+    });
 
-        // debug purposes
-        // socket.emit('change location', [data, playersID]);
-        // console.log(data[data.length - 1]);
+    socket.on('return to deck', function(data) {
+        pokerDeck.addToTop([data[0]]);
+        io.emit('deck count', pokerDeck.remaining());
+        socket.broadcast.emit('return to deck', [data[1], data[2], playersID]);
     });
 
     socket.on('add back drag evt to cards in drop', function() {
@@ -95,9 +110,6 @@ io.on('connection', function(socket) {
 
     socket.on('drop success check', function(data) {
         socket.broadcast.emit('drop success check', data);
-        
-        // debug
-        // io.emit('drop success check', data);
     });
 
     socket.on('draw', function(data) {
@@ -121,9 +133,6 @@ io.on('connection', function(socket) {
 
     socket.on('offer rematch', function() {
         socket.broadcast.emit('offer rematch');
-
-        // Use above when finished debugging with this
-        // socket.emit('offer rematch');
     });
 
     socket.on('accept rematch', function(data) {

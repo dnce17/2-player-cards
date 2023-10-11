@@ -7,12 +7,11 @@
     </head>
     <body>
         <div class="arena-ctnr">
-            <!-- <div class="msg center">Waiting for another player...</div> -->
-            <div class="field-cards-ctnr center">
-                <div class="drop-ctnr drop-zone">
-                </div>
-                <div class="deck-ctnr">
-                    <img src="img/poker-back.png" class="card card-back">
+            <div class="msg center">Waiting for another player...</div>
+            <div class="field-cards-ctnr center hidden">
+                <div class="drop-ctnr drop-zone"></div>
+                <div class="deck-ctnr drop-zone">
+                    <!-- <img src="img/poker-back.png" class="card card-back"> -->
                     <div class="deck-count center">35</div>
                 </div>
             </div>
@@ -24,6 +23,10 @@
                 <div class="player-name player-a-name">Player A: </div>
                 <!-- Under editing with making hands drop zone too -->
                 <div class="player-a-hand drop-zone"></div>
+            </div>
+            <div class="turn-ctnr hidden">
+                <button class="turn-btn">End Turn</button>
+                <div class="whose-turn">Your turn</div>
             </div>
         </div>
         <!-- <div class="side-ctnr">

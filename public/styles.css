@@ -34,6 +34,14 @@
 
 .deck-ctnr {
     left: 50px;
+    background-image: url("img/poker-back.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 108px 150px;
+}
+
+.deck-count {
+    pointer-events: none;
 }
 
 .card {
@@ -131,6 +139,16 @@
 .btns-ctnr {
     position: absolute;
     bottom: 0;
+}
+
+.turn-ctnr {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 150px;
+    text-align: center;
+    /* border: 1px solid silver; */
 }
 
 .hidden {
