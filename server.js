@@ -57,6 +57,9 @@ io.on('connection', function(socket) {
         io.emit('isPlayerA',  playersID.playerA);
 
         socket.emit('disable player B drop zone');
+
+        // test purpose
+        pokerDeck = new Deck(cardDeck());
     }
     else {
         playersID.playerB = socket.id;
@@ -151,6 +154,19 @@ io.on('connection', function(socket) {
         io.emit('starting drop card', pokerDeck.draw());
         io.emit('deck count', pokerDeck.remaining());
     })
+
+    // CHAT-RELATED sockets
+    socket.on('send msg', function(data) {
+        io.emit('send msg', [data, playersID]);
+    });
+
+    socket.on('typing', function(data) {
+        socket.broadcast.emit('typing', data)
+    });
+
+    socket.on('not typing', function(data) {
+        socket.broadcast.emit('not typing', data)
+    });
 });
 
 // To restart game

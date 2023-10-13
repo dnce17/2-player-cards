@@ -45,9 +45,9 @@ deckCtnr.addEventListener('click', function() {
     }
 });
 
-// rematchBtn.addEventListener('click', function() {
-//     socket.emit('offer rematch');
-// });
+rematchBtn.addEventListener('click', function() {
+    socket.emit('offer rematch');
+});
 
 // Give cards drag event
 let startLocation = null;
@@ -57,7 +57,12 @@ function addDragEvt(card) {
         card.classList.add('is-dragging');
         start = Array.prototype.indexOf.call(card.parentElement.children, card);
 
-        startLocation = card.parentElement.className; 
+        startLocation = card.parentElement.className;
+        
+        // Remove hover if the hovered card is being dragged
+        if (card.classList.contains('hovered')) {
+            card.classList.remove('hovered');
+        }
     })
 
     card.addEventListener('dragend', function(e) {
@@ -79,11 +84,25 @@ function addDragEvt(card) {
                 target
             ]);
         }
-    })
+
+        if (target.includes('hand')) {
+            addHover(card);
+        }
+    });
 }
-cards.forEach(function(card) {
-    addDragEvt(card);
-});
+
+function addHover(card) {
+    card.addEventListener('mouseover', function() {
+        if (card.parentElement.classList.contains('hand')) {
+            card.classList.add('hovered');
+        }
+    });
+    card.addEventListener('mouseout', function() {
+        if (card.parentElement.classList.contains('hand')) {
+            card.classList.remove('hovered');
+        }
+    });
+}
 
 let enemyDropSuccess = false;
 let target = null;
@@ -114,14 +133,13 @@ addDropEvt(dropCtnr);
 addDropEvt(deckCtnr);
 
 endTurnBtn.addEventListener('click', function() {
-    // let whoseTurn = document.querySelector('.whose-turn');
     whoseTurn.textContent = "Your opponent's turn";
     endTurnBtn.disabled = true;
 
     socket.emit('end turn');
-
-    console.log('end turn');
 });
+
+
 
 
 // LISTEN FOR EVENTS EMITTED "FROM" THE SERVER (BACKEND)
@@ -152,6 +170,7 @@ function startingHand(playerHand, opponentHand, handCards) {
     // Add drag evt to only the player's OWN cards
     for (let i = 0; i < playerHand.children.length; i++) {
         addDragEvt(playerHand.children[i]);
+        addHover(playerHand.children[i]);
     }
 
     // Don't let player see opponent hand
@@ -268,12 +287,14 @@ socket.on('draw', function(data) {
         playerAHand.innerHTML += `<img src="img/poker-cards/${cardToDraw}" draggable="true" class="card">`
         for (let i = 0; i < playerAHand.children.length; i++) {
             addDragEvt(playerAHand.children[i]);
+            addHover(playerAHand.children[i]);
         }
     }
     else {
         playerBHand.innerHTML += `<img src="img/poker-cards/${cardToDraw}" draggable="true" class="card">`
         for (let i = 0; i < playerBHand.children.length; i++) {
             addDragEvt(playerBHand.children[i]);
+            addHover(playerBHand.children[i]);
         }
     }
 });
@@ -324,7 +345,6 @@ socket.on('offer rematch', function() {
         acceptBtn.innerHTML = 'Accept Rematch';
 
         acceptBtn.addEventListener('click', function() {
-            // console.log('accepted match');
             socket.emit('accept rematch', socket.id);
         });
 
@@ -359,8 +379,3 @@ socket.on('accept rematch', function() {
 // https://www.youtube.com/watch?v=ecKw7FfikwI&t=1005s
 // https://stackoverflow.com/questions/7110353/html5-dragleave-fired-when-hovering-a-child-element
 // https://stackoverflow.com/questions/11515383/why-is-element-innerhtml-bad-code
-
-// To look over if I want to use sqlite
-
-// Issue
-// if player drags card from hand back to hand,it causes issues = will just make a return fro drop to hand button
