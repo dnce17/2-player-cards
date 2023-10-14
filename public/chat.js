@@ -29,7 +29,7 @@ let timer = null;
 input.addEventListener('keyup', function() {
     function notTyping() {
         socket.emit('not typing', '');
-        console.log('should only be activated once')
+        // console.log('should only be activated once')
     }
 
     // Clears timeout if set already, preventing previous task from running
@@ -44,6 +44,13 @@ socket.on('send msg', function(data) {
 
     toSend.classList.add('output');
     outputCtnr.appendChild(toSend);
+
+    // console.log("scrolltop: " + outputCtnr.scrollTop);
+    // console.log("scrollheight: " + outputCtnr.scrollHeight);
+    // console.log("clientheight: " + outputCtnr.clientHeight);
+    if (outputCtnr.scrollTop != outputCtnr.scrollHeight) {
+        outputCtnr.scrollTop = outputCtnr.scrollHeight;
+    }
 });
 
 socket.on('typing', function(data) {
@@ -57,3 +64,5 @@ socket.on('not typing', function(data) {
 // Credit
 // trim() - https://www.freecodecamp.org/news/check-if-string-is-empty-or-null-javascript/
 // reportValidity() - https://forum.freecodecamp.org/t/setcustomvalidity-not-sending-error-message-to-html-despite-detecting-error/414917/3
+// Got me started - https://stackoverflow.com/questions/25505778/automatically-scroll-down-chat-div
+// mozilla on scrollTop, scrollHeight

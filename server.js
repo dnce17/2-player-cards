@@ -118,6 +118,14 @@ io.on('connection', function(socket) {
     socket.on('draw', function(data) {
         socket.emit('draw', [data, playersID, pokerDeck.draw()]);
     });
+    
+    socket.on('draw audio', function() {
+        io.emit('draw audio');
+    });
+
+    socket.on('indicate card owner in drop', function(data) {
+        io.emit('indicate card owner in drop', data);
+    });
 
     socket.on('show card back to opponent', function(data) {
         socket.broadcast.emit('show card back to opponent', [data, playersID]);

@@ -1,6 +1,7 @@
 // FRONTEND/Client
 
 let socket = io.connect('http://localhost:5500');
+// let socket = io.connect('192.168.1.111:5500');
 
 let playerA = document.querySelector('.player-a-ctnr');
 let playerB = document.querySelector('.player-b-ctnr');
@@ -21,16 +22,15 @@ let whoseTurn = document.querySelector('.whose-turn');
 let startingHandCount = 8;
 let rematchBtn = document.querySelector('.rematch-btn');
 
-// DEBUG purposes: To identify both players on browser
 playersID = {}
 
 // EVENTS
-
 // Draw cards
 deckCtnr.addEventListener('click', function() {
     socket.emit('draw', socket.id);
     socket.emit('show card back to opponent', socket.id);
     socket.emit('deck count');
+    socket.emit('draw audio');
     if (parseInt(deckCount.textContent) == 1) {
         let returnCards = [];
 
@@ -49,6 +49,7 @@ rematchBtn.addEventListener('click', function() {
     socket.emit('offer rematch');
 });
 
+// FUNCTIONS
 // Give cards drag event
 let startLocation = null;
 function addDragEvt(card) {
@@ -88,7 +89,31 @@ function addDragEvt(card) {
         if (target.includes('hand')) {
             addHover(card);
         }
+
+        if (target.includes('drop-ctnr')) {
+            socket.emit('indicate card owner in drop', socket.id);
+        }
     });
+}
+
+// Add color border to indicate owner of card
+function cardBorder(target, card) {
+    if (target.includes('drop-zone')) {
+        if (socket.id == playersID.playerA) {
+            card.classList.add('a-card');
+        }
+        else {
+            card.classList.add('b-card');
+        }
+    }
+    else {
+        if (socket.id == playersID.playerA) {
+            card.classList.remove('a-card');
+        }
+        else {
+            card.classList.remove('b-card');
+        }
+    }
 }
 
 function addHover(card) {
@@ -104,6 +129,11 @@ function addHover(card) {
     });
 }
 
+function drawAudio() {
+    let drawSound = new Audio('audio/draw-card.mp3');
+    drawSound.play();
+}
+
 let enemyDropSuccess = false;
 let target = null;
 
@@ -115,6 +145,19 @@ function addDropEvt(dropZone) {
     });
 
     dropZone.addEventListener('drop', function(e) {
+        // Prevent dragend if not player's turn
+        if (endTurnBtn.disabled == true) {
+            let outputCtnr = document.querySelector('.output-ctnr');
+
+            let toSend = document.createElement("div");
+            toSend.textContent = "(not your turn)";
+            toSend.style.fontWeight = 'bold';
+            toSend.classList.add('output');
+
+            outputCtnr.appendChild(toSend);
+            return;
+        }
+
         const curTask = document.querySelector('.is-dragging');
         dropZone.appendChild(curTask);
 
@@ -138,9 +181,6 @@ endTurnBtn.addEventListener('click', function() {
 
     socket.emit('end turn');
 });
-
-
-
 
 // LISTEN FOR EVENTS EMITTED "FROM" THE SERVER (BACKEND)
 // Get players who connect
@@ -222,7 +262,11 @@ function changeLocation(destination, playerHand, playerHandClass, index, cardImg
         playerHand.innerHTML += '<img src="img/poker-back.png" draggable="false" class="card">';
     }
     enemyDropSuccess = false;
-    console.log(destination);
+
+    if (!destination.includes('drop-ctnr')) {
+
+    }
+    // console.log(destination);
 }
 
 socket.on('change location', function(data) {
@@ -248,8 +292,17 @@ socket.on('change location', function(data) {
     }
 });
 
-// CHECKPOINT
-// NEED TO add: move from drop to deck reflect in opponents
+socket.on('indicate card owner in drop', function(data) {
+    let card = dropCtnr.children[dropCtnr.children.length - 1];
+
+    if (data == playersID.playerA) {
+        card.classList.add('a-card');
+    }
+    else {
+        card.classList.add('b-card');
+    }
+})
+
 socket.on('return to deck', function(data) {
     console.log('return to deck');
     startLocation = data[1];
@@ -281,7 +334,7 @@ socket.on('drop success check', function(data) {
 
 socket.on('draw', function(data) {
     // Compare ID to check who did the action
-    cardToDraw = data[2]
+    cardToDraw = data[2];
     
     if (data[0] == data[1].playerA) {
         playerAHand.innerHTML += `<img src="img/poker-cards/${cardToDraw}" draggable="true" class="card">`
@@ -299,13 +352,16 @@ socket.on('draw', function(data) {
     }
 });
 
+socket.on('draw audio', function() {
+    drawAudio();
+});
+
 socket.on('deck count', function(data) {
     deckCount.textContent = data;
 })
 
 // Opponent will see card back after draw
 socket.on('show card back to opponent', function(data) {
-    
     if (data[0] == data[1].playerA) {
         playerAHand.innerHTML += '<img src="img/poker-back.png" draggable="true" class="card">';
     }
@@ -318,10 +374,20 @@ socket.on('reshuffle to deck', function(data) {
     deckCount.textContent = data;
 
     let topCard = dropCtnr.children[dropCtnr.children.length - 1].src.split('/');
+    let cardBorder = dropCtnr.children[dropCtnr.children.length - 1].className;
+    if (cardBorder.includes('a-card')) {
+        cardBorder = 'a-card'
+    }
+    else if (cardBorder.includes('b-card')) {
+        cardBorder = 'b-card'
+    }
+
     while (dropCtnr.hasChildNodes()) {
         dropCtnr.removeChild(dropCtnr.firstChild);
     }
-    dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card">`;
+    dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card ${cardBorder}">`;
+
+    console.log(topCard);
 });
 
 socket.on('display game materials', function() {

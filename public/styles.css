@@ -2,9 +2,11 @@
     box-sizing: border-box;
 }
 
-/* body {
-    background-color: green;
-} */
+body {
+    background-image: url('img/poker-bg.png');
+    background-color: darkgreen;
+
+}
 
 .ctnr {
     text-align: center;
@@ -63,7 +65,7 @@
     position: absolute;
     width: 100%;
     height: 25vh;
-    border: 2px solid purple;
+    border: 2px solid rgb(204, 12, 204);
 }
 
 .player-b-ctnr {
@@ -89,6 +91,10 @@
 
 .player-a-hand .card:not(:first-child), .player-b-hand .card:not(:first-child) {
     margin-left: -70px;
+}
+
+.player-a-hand img, .player-b-hand img {
+    border: none;
 }
 
 .top {
@@ -120,7 +126,8 @@
 .chat-ctnr {
     height: 75vh;
     width: 20vw;
-    border: 1px solid darkblue;
+    border: 1px solid black;
+    background-color: white;
 }
 
 .input-ctnr {
@@ -129,10 +136,7 @@
 }
 
 .box-style {
-    /* width: 15vw; */
     width: 100%;
-    /* border-radius: 10px; */
-    /* border: none; */
     border: 1px solid silver;
     padding: 10px;
 }
@@ -141,8 +145,14 @@
     width: 100%;
 }
 
+.output-ctnr {
+    height: 448px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
 .output-ctnr div {
-    border: 1px solid green;
+    border-bottom: 1px solid black;
     padding: 10px;
 }
 
@@ -165,10 +175,6 @@
     /* border: 1px solid silver; */
 }
 
-.hidden {
-    display: none;
-}
-
 .arena-ctnr, .side-ctnr {
     display: inline-block;
 }
@@ -186,6 +192,19 @@
     transition: all 0.5s ease;
     margin-top: -25px;
     padding-bottom: 25px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Helps indicate whose card is whose */
+.a-card {
+    border: 5px solid rgb(204, 12, 204);
+}
+
+.b-card {
+    border: 5px solid pink;
 }
 
 @media screen and (max-width: 800px) {
@@ -249,4 +268,9 @@
     .box-style, .send-btn {
         width: 48vw;
     }
+
+    .output-ctnr {
+        height: 100%;
+    }
+    
 }
