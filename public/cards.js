@@ -1,7 +1,6 @@
 // FRONTEND/Client
 
 let socket = io.connect('http://localhost:5500');
-// let socket = io.connect('192.168.1.111:5500');
 
 let playerA = document.querySelector('.player-a-ctnr');
 let playerB = document.querySelector('.player-b-ctnr');
@@ -40,7 +39,6 @@ deckCtnr.addEventListener('click', function() {
             returnCards.push(cardImg[cardImg.length - 1]);
         }
 
-        console.log('Returned Cards: ' + returnCards);
         socket.emit('reshuffle to deck', returnCards);
     }
 });
@@ -154,20 +152,20 @@ function addDropEvt(dropZone) {
             toSend.style.fontWeight = 'bold';
             toSend.classList.add('output');
 
+            socket.emit('scroll chat to bottom');
+
             outputCtnr.appendChild(toSend);
             return;
         }
 
         const curTask = document.querySelector('.is-dragging');
         dropZone.appendChild(curTask);
-
         target = dropZone.className;
 
         // Send info that drop was success to server w/ true
         socket.emit('drop success check', true);
 
         if (this.classList.contains('deck-ctnr')) {
-            // console.log('moved to deck');
             movedToDeck = true;
         }
     });
@@ -178,7 +176,6 @@ addDropEvt(deckCtnr);
 endTurnBtn.addEventListener('click', function() {
     whoseTurn.textContent = "Your opponent's turn";
     endTurnBtn.disabled = true;
-
     socket.emit('end turn');
 });
 
@@ -200,7 +197,7 @@ socket.on('isPlayerB', function(data) {
 });
 
 // Players' starting hand
-// CAUTION: this is broadcast all when player B enters
+// CAUTION: this is all "broadcasted" when player B enters
 function startingHand(playerHand, opponentHand, handCards) {
     // Add player's starting hand
     for (let i = 0; i < handCards.length; i++) {
@@ -262,18 +259,12 @@ function changeLocation(destination, playerHand, playerHandClass, index, cardImg
         playerHand.innerHTML += '<img src="img/poker-back.png" draggable="false" class="card">';
     }
     enemyDropSuccess = false;
-
-    if (!destination.includes('drop-ctnr')) {
-
-    }
-    // console.log(destination);
 }
 
 socket.on('change location', function(data) {
 
     let origin = data[0][data[0].length - 2];
     let destination = data[0][data[0].length - 1];
-
     let playerID = data[0][0], cardIndex = data[0][1], cardImg = data[0][2];
 
     if (enemyDropSuccess && origin != destination) {
@@ -304,7 +295,6 @@ socket.on('indicate card owner in drop', function(data) {
 })
 
 socket.on('return to deck', function(data) {
-    console.log('return to deck');
     startLocation = data[1];
 
     // Do not need compare player ID b/c drop is shared
@@ -313,11 +303,9 @@ socket.on('return to deck', function(data) {
         startLocation = null;
     }
     if (data[0] == data[2].playerA) {
-        console.log('alter A Hand');
         playerAHand.removeChild(playerAHand.children[playerAHand.children.length - 1]);
     }
     else if (data[0] == data[2].playerB) {
-        console.log('alter B Hand');
         playerBHand.removeChild(playerBHand.children[playerBHand.children.length - 1]);
     }
 });
@@ -386,8 +374,6 @@ socket.on('reshuffle to deck', function(data) {
         dropCtnr.removeChild(dropCtnr.firstChild);
     }
     dropCtnr.innerHTML += `<img src="img/poker-cards/${topCard[topCard.length - 1]}" draggable="true" class="card ${cardBorder}">`;
-
-    console.log(topCard);
 });
 
 socket.on('display game materials', function() {
@@ -418,6 +404,7 @@ socket.on('offer rematch', function() {
     }
 })
 
+// Restart game = gather all cards on page to deck + redistribute starting hand
 socket.on('accept rematch', function() {
     document.querySelectorAll('.card').forEach(function(card) {
         if (!card.classList.contains('card-back')) {
@@ -435,7 +422,6 @@ socket.on('accept rematch', function() {
         btnsCtnr.removeChild(btnsCtnr.children[btnsCtnr.children.length - 1]);
     }
 });
-
 
 // Credits
 // https://stackoverflow.com/questions/66771371/how-to-get-index-of-div-in-parent-div

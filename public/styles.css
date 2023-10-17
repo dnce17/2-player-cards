@@ -5,7 +5,6 @@
 body {
     background-image: url('img/poker-bg.png');
     background-color: darkgreen;
-
 }
 
 .ctnr {
@@ -16,7 +15,6 @@ body {
     position: relative;
     height: 97vh;
     width: 70vw;
-    /* border: 1px solid orange; */
 }
 
 .field-cards-ctnr > div {
@@ -85,7 +83,6 @@ body {
 
 /* Giving height prevents collapse from no card in hand, preventing user from putting card in hand */
 .player-a-hand, .player-b-hand {
-    /* border: 5px solid brown; */
     height: 20vh;
 }
 
@@ -118,7 +115,6 @@ body {
 
 .side-ctnr {
     position: relative;
-    /* border: 1px solid gold; */
     height: 97vh;
     width: 20vw;
 }
@@ -172,7 +168,6 @@ body {
     transform: translateY(-50%);
     width: 150px;
     text-align: center;
-    /* border: 1px solid silver; */
 }
 
 .arena-ctnr, .side-ctnr {
@@ -198,7 +193,7 @@ body {
     display: none;
 }
 
-/* Helps indicate whose card is whose */
+/* Indicate whose card is whose */
 .a-card {
     border: 5px solid rgb(204, 12, 204);
 }
@@ -208,7 +203,6 @@ body {
 }
 
 @media screen and (max-width: 800px) {
-
     .drop-ctnr, .deck-ctnr {
         width: 120px;
         height: 150px;
@@ -260,7 +254,6 @@ body {
     }
 
     .btns-ctnr {
-        /* transform: translateX(100%); */
         top: 0;
         right: 0;
     }
@@ -272,5 +265,4 @@ body {
     .output-ctnr {
         height: 100%;
     }
-    
 }

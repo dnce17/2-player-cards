@@ -53,7 +53,6 @@ function cardDeck() {
         "queen_of_hearts.png",
         "queen_of_spades.png",
     ]
-
     return deck;
 }
 

@@ -29,7 +29,6 @@ let timer = null;
 input.addEventListener('keyup', function() {
     function notTyping() {
         socket.emit('not typing', '');
-        // console.log('should only be activated once')
     }
 
     // Clears timeout if set already, preventing previous task from running
@@ -45,12 +44,7 @@ socket.on('send msg', function(data) {
     toSend.classList.add('output');
     outputCtnr.appendChild(toSend);
 
-    // console.log("scrolltop: " + outputCtnr.scrollTop);
-    // console.log("scrollheight: " + outputCtnr.scrollHeight);
-    // console.log("clientheight: " + outputCtnr.clientHeight);
-    if (outputCtnr.scrollTop != outputCtnr.scrollHeight) {
-        outputCtnr.scrollTop = outputCtnr.scrollHeight;
-    }
+    socket.emit('scroll chat to bottom');
 });
 
 socket.on('typing', function(data) {
@@ -59,6 +53,13 @@ socket.on('typing', function(data) {
 
 socket.on('not typing', function(data) {
     typing.textContent = data;
+});
+
+// NOTE: don't need to include this in cards.js
+socket.on('scroll chat to bottom', function() {
+    if (outputCtnr.scrollTop != outputCtnr.scrollHeight) {
+        outputCtnr.scrollTop = outputCtnr.scrollHeight;
+    }
 });
 
 // Credit

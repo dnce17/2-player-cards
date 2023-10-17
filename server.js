@@ -27,7 +27,7 @@ let pokerDeck = new Deck(cardDeck());
 function startingHand() {
     // Reset deck
     pokerDeck = new Deck(cardDeck());
-
+    
     let counter = 0;
     let startHandA = [], startHandB = [];
     pokerDeck.shuffle();
@@ -50,16 +50,14 @@ function startingHand() {
 
 io.on('connection', function(socket) {
     console.log('A user has connected');
-    // console.log(`User Count: ${io.engine.clientsCount}, ${socket.id}`);
 
     if (io.engine.clientsCount == 1) {
         playersID.playerA = socket.id;
-        io.emit('isPlayerA',  playersID.playerA);
-
+        io.emit('isPlayerA',  playersID.playerA); 
         socket.emit('disable player B drop zone');
 
-        // test purpose
-        pokerDeck = new Deck(cardDeck());
+        // For test purpose only
+        // pokerDeck = new Deck(cardDeck());
     }
     else {
         playersID.playerB = socket.id;
@@ -67,7 +65,6 @@ io.on('connection', function(socket) {
 
         // socket.emit NOT broadcast so it only affects the owner of this socket
         socket.emit('board orienation');
-
 
         // Add 8 cards from deck to both players' starting hand + place card in drop to start
         let startHand = startingHand();
@@ -138,14 +135,13 @@ io.on('connection', function(socket) {
     socket.on('reshuffle to deck', function(data) {
         pokerDeck = new Deck(data);
         pokerDeck.shuffle();
-        console.log(pokerDeck);
         io.emit('reshuffle to deck', pokerDeck.remaining());
     });
 
     socket.on('offer rematch', function() {
         socket.broadcast.emit('offer rematch');
     });
-
+    
     socket.on('accept rematch', function(data) {
         io.emit('accept rematch');
 
@@ -175,15 +171,11 @@ io.on('connection', function(socket) {
     socket.on('not typing', function(data) {
         socket.broadcast.emit('not typing', data)
     });
-});
 
-// To restart game
-// all we need is to gather all cards to the deck and redistribute the starting hand
+    socket.on('scroll chat to bottom', function() {
+        socket.emit('scroll chat to bottom');
+    });
+});
 
 // Credits
 // https://stackoverflow.com/questions/32674391/io-emit-vs-socket-emit
-
-// to do
-// starting hand - CHECK
-// reshuffle drop oile into deck after deck runs out
-// add count to deck - CHECK
