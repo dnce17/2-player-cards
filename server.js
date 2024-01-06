@@ -55,9 +55,6 @@ io.on('connection', function(socket) {
         playersID.playerA = socket.id;
         io.emit('isPlayerA',  playersID.playerA); 
         socket.emit('disable player B drop zone');
-
-        // For test purpose only
-        // pokerDeck = new Deck(cardDeck());
     }
     else {
         playersID.playerB = socket.id;

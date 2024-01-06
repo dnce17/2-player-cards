@@ -23,23 +23,46 @@ let rematchBtn = document.querySelector('.rematch-btn');
 
 playersID = {}
 
+// Prevent action when not player's turn 
+function notYourTurn() {
+    let outputCtnr = document.querySelector('.output-ctnr');
+
+    let toSend = document.createElement("div");
+    toSend.textContent = "(not your turn)";
+    toSend.style.fontWeight = 'bold';
+    toSend.classList.add('output');
+
+    socket.emit('scroll chat to bottom');
+
+    outputCtnr.appendChild(toSend);
+    return;
+}
+
 // EVENTS
 // Draw cards
 deckCtnr.addEventListener('click', function() {
-    socket.emit('draw', socket.id);
-    socket.emit('show card back to opponent', socket.id);
-    socket.emit('deck count');
-    socket.emit('draw audio');
-    if (parseInt(deckCount.textContent) == 1) {
-        let returnCards = [];
 
-        // All cards except the top card of drop goes back to deck
-        for (let i = 0; i < dropCtnr.children.length - 1; i++) {
-            let cardImg = dropCtnr.children[i].src.split('/');
-            returnCards.push(cardImg[cardImg.length - 1]);
+    // Prevent draw if not player's turn
+    if (endTurnBtn.disabled == true) {
+        notYourTurn();
+    }
+    else {
+        // Otherwise, draw
+        socket.emit('draw', socket.id);
+        socket.emit('show card back to opponent', socket.id);
+        socket.emit('deck count');
+        socket.emit('draw audio');
+        if (parseInt(deckCount.textContent) == 1) {
+            let returnCards = [];
+
+            // All cards except the top card of drop goes back to deck
+            for (let i = 0; i < dropCtnr.children.length - 1; i++) {
+                let cardImg = dropCtnr.children[i].src.split('/');
+                returnCards.push(cardImg[cardImg.length - 1]);
+            }
+
+            socket.emit('reshuffle to deck', returnCards);
         }
-
-        socket.emit('reshuffle to deck', returnCards);
     }
 });
 
@@ -145,28 +168,19 @@ function addDropEvt(dropZone) {
     dropZone.addEventListener('drop', function(e) {
         // Prevent dragend if not player's turn
         if (endTurnBtn.disabled == true) {
-            let outputCtnr = document.querySelector('.output-ctnr');
-
-            let toSend = document.createElement("div");
-            toSend.textContent = "(not your turn)";
-            toSend.style.fontWeight = 'bold';
-            toSend.classList.add('output');
-
-            socket.emit('scroll chat to bottom');
-
-            outputCtnr.appendChild(toSend);
-            return;
+            notYourTurn();
         }
+        else {
+            const curTask = document.querySelector('.is-dragging');
+            dropZone.appendChild(curTask);
+            target = dropZone.className;
 
-        const curTask = document.querySelector('.is-dragging');
-        dropZone.appendChild(curTask);
-        target = dropZone.className;
+            // Send info that drop was success to server w/ true
+            socket.emit('drop success check', true);
 
-        // Send info that drop was success to server w/ true
-        socket.emit('drop success check', true);
-
-        if (this.classList.contains('deck-ctnr')) {
-            movedToDeck = true;
+            if (this.classList.contains('deck-ctnr')) {
+                movedToDeck = true;
+            }
         }
     });
 }

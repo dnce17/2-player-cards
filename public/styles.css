@@ -81,7 +81,7 @@ body {
     font-size: large;
 }   
 
-/* Giving height prevents collapse from no card in hand, preventing user from putting card in hand */
+/* Giving height prevents collapse from no card in hand that would have prevented user from putting card in hand */
 .player-a-hand, .player-b-hand {
     height: 20vh;
 }
