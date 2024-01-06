@@ -17,5 +17,5 @@ Players can click the "End Turn" button when they are done with their turn. Belo
 
 
 #### Credits
-##### - Provided assistance with Github troubles --> https://stackoverflow.com/questions/16330404/how-to-remove-remote-origin-from-a-git-repository
-##### - Explantion of favicon --> https://www.webweaver.nu/html-tips/favicon.shtml found from https://stackoverflow.com/questions/31075893/how-to-fix-favicon-ico-error-failed-to-load-resource-neterr-empty-response
+- Provided assistance with Github troubles --> https://stackoverflow.com/questions/16330404/how-to-remove-remote-origin-from-a-git-repository
+- Explantion of favicon --> https://www.webweaver.nu/html-tips/favicon.shtml found from https://stackoverflow.com/questions/31075893/how-to-fix-favicon-ico-error-failed-to-load-resource-neterr-empty-response
